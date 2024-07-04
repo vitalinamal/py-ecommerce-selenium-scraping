@@ -23,6 +23,15 @@ TABLETS_URL = urljoin(
 PHONES_URL = urljoin(BASE_URL, "/test-sites/e-commerce/more/phones")
 TOUCH_URL = urljoin(BASE_URL, "/test-sites/e-commerce/more/phones/touch")
 
+URLS_AND_FILES = [
+    (HOME_URL, "home.csv"),
+    (COMPUTERS_URL, "computers.csv"),
+    (LAPTOPS_URL, "laptops.csv"),
+    (TABLETS_URL, "tablets.csv"),
+    (PHONES_URL, "phones.csv"),
+    (TOUCH_URL, "touch.csv")
+]
+
 
 @dataclass
 class Product:
@@ -87,9 +96,9 @@ def press_button_more(url: str) -> list[Product]:
 def check_button_more(url: str) -> list[Product]:
     soup = fetch_html(url)
     button = soup.select(".ecomerce-items-scroll-more")
-    if not button:
-        return get_products_from_soup(soup)
-    return press_button_more(url)
+    if button:
+        return press_button_more(url)
+    return get_products_from_soup(soup)
 
 
 def write_products_to_file(path: str, products: list[Product]) -> None:
@@ -105,49 +114,15 @@ def write_products_to_file(path: str, products: list[Product]) -> None:
         writer.writerows([astuple(product) for product in products])
 
 
-def get_home_page() -> list[Product]:
-    products = check_button_more(HOME_URL)
-    write_products_to_file("home.csv", products)
-    return products
-
-
-def get_all_computers() -> list[Product]:
-    products = check_button_more(COMPUTERS_URL)
-    write_products_to_file("computers.csv", products)
-    return products
-
-
-def get_all_laptops() -> list[Product]:
-    products = check_button_more(LAPTOPS_URL)
-    write_products_to_file("laptops.csv", products)
-    return products
-
-
-def get_all_tablets() -> list[Product]:
-    products = check_button_more(TABLETS_URL)
-    write_products_to_file("tablets.csv", products)
-    return products
-
-
-def get_all_phones() -> list[Product]:
-    products = check_button_more(PHONES_URL)
-    write_products_to_file("phones.csv", products)
-    return products
-
-
-def get_all_touch() -> list[Product]:
-    products = check_button_more(TOUCH_URL)
-    write_products_to_file("touch.csv", products)
+def get_products_by_type(url: str, file_name: str) -> list[Product]:
+    products = check_button_more(url)
+    write_products_to_file(file_name, products)
     return products
 
 
 def get_all_products() -> None:
-    get_home_page()
-    get_all_computers()
-    get_all_laptops()
-    get_all_tablets()
-    get_all_phones()
-    get_all_touch()
+    for url, file_name in URLS_AND_FILES:
+        get_products_by_type(url, file_name)
 
 
 if __name__ == "__main__":
